@@ -14,14 +14,14 @@ module QuizVCh
       )
       @current_time = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
       @writer = FileWriter.new(
-        "w",
+        "a", # <-- змініть "w" на "a"
         "#{@user_name}_#{@current_time}.txt"
       )
       @statistics = Statistics.new(@writer)
     end
 
     def run
-      @writer.write("Користувач: #{@user_name}")
+      @writer.write("Ім'я користувача: #{@user_name}")
       @writer.write("Час початку: #{@current_time}")
       @question_collection.collection.each_with_index do |question, idx|
         shuffled = question.shuffled_answers
