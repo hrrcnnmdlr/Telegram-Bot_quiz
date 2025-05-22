@@ -1,0 +1,6 @@
+- question: Несвідома неправда, коли вас не хотіли вводити в оману. Просто помилка.
+  answers:
+    - Disinformation
+    - Misinformation
+    - Malinformation
+  correct: Misinformation

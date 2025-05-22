@@ -1,0 +1,59 @@
+require 'rubygems'
+require 'bundler/setup'
+require 'pg'
+require 'active_record'
+require 'yaml'
+
+
+namespace :db do
+  desc 'Migrate the database'
+  task :migrate do
+    connection_details = YAML.load(File.open("config/database.yml"))
+    p connection_details
+    ActiveRecord::Base.establish_connection(connection_details)
+    puts ActiveRecord.version.version
+    migration_context = ActiveRecord::MigrationContext.new("db/migrate")
+    migration_context.migrate(nil)
+  end
+
+  desc 'Create the database'
+  task :create do
+    config = YAML.load(File.open("config/database.yml"))
+    dbname = config['database'] || config[:database]
+    user = config['username'] || config[:username]
+    password = config['password'] || config[:password]
+    host = config['host'] || config[:host] || 'localhost'
+    begin
+      conn = PG.connect(dbname: 'postgres', user: user, password: password, host: host)
+      conn.exec("CREATE DATABASE #{dbname}")
+      puts "Database '#{dbname}' created."
+    rescue PG::DuplicateDatabase
+      puts "Database '#{dbname}' already exists."
+    ensure
+      conn.close if conn
+    end
+  end
+
+  desc 'Drop the database'
+  task :drop do
+    config = YAML.load(File.open("config/database.yml"))
+    dbname = config['database'] || config[:database]
+    user = config['username'] || config[:username]
+    password = config['password'] || config[:password]
+    host = config['host'] || config[:host] || 'localhost'
+    begin
+      conn = PG.connect(dbname: 'postgres', user: user, password: password, host: host)
+      # Завершити всі сесії до бази
+      conn.exec <<-SQL
+        SELECT pg_terminate_backend(pg_stat_activity.pid)
+        FROM pg_stat_activity
+        WHERE pg_stat_activity.datname = '#{dbname}'
+          AND pid <> pg_backend_pid();
+      SQL
+      conn.exec("DROP DATABASE IF EXISTS #{dbname}")
+      puts "Database '#{dbname}' dropped."
+    ensure
+      conn.close if conn
+    end
+  end
+end

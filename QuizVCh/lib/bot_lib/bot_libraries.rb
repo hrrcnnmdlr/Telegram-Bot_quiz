@@ -1,0 +1,8 @@
+require 'telegram/bot'
+require_relative 'app_cofigurator'
+require_relative 'engine_bot'
+require_relative 'quiz_bot'
+require_relative 'message_sender'
+require_relative 'message_responder'
+require_relative 'reply_markup_formatter'
+require_relative 'database_connector'
